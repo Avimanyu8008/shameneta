@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.bun/
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.local
+.env.github
+packages/web/dist/
