@@ -20,6 +20,8 @@ type Case = {
 export default function CandidatePage() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  // ✅ ALL hooks at top — before any conditional returns
+  const isMobile = useIsMobile();
 
   const query = useQuery({
     queryKey: ["candidate", id],
@@ -51,7 +53,6 @@ export default function CandidatePage() {
 
   const { candidate: c, cases } = query.data;
   const risk = getRiskLevel(c.publicRiskScore);
-  const isMobile = useIsMobile();
   const maxScore = 100;
   const barPct = Math.min((c.publicRiskScore / maxScore) * 100, 100);
 
@@ -170,7 +171,7 @@ export default function CandidatePage() {
             <div>
               <h1 style={{
                 fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(1.5rem, 4vw, 2.2rem)",
+                fontSize: "clamp(1.3rem, 4vw, 2.2rem)",
                 fontWeight: 900,
                 margin: "0 0 10px",
                 lineHeight: 1.08,
@@ -178,7 +179,7 @@ export default function CandidatePage() {
               }}>
                 {c.displayName}
               </h1>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 18 }}>
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
                 <span style={{
                   fontSize: 11,
                   fontFamily: "'JetBrains Mono', monospace",
@@ -210,10 +211,10 @@ export default function CandidatePage() {
                   { val: c.acquittals, label: "Acquitted", color: "#4ade80" },
                 ].map((item, idx) => (
                   <div key={item.label} style={{
-                    padding: isMobile ? "8px 12px 8px 0" : "10px 20px 10px 0",
-                    marginRight: isMobile ? 12 : 20,
+                    padding: isMobile ? "6px 10px 6px 0" : "10px 20px 10px 0",
+                    marginRight: isMobile ? 10 : 20,
                     borderRight: idx < 4 ? "1px solid var(--border)" : "none",
-                    paddingRight: isMobile ? 12 : 20,
+                    paddingRight: isMobile ? 10 : 20,
                   }}>
                     <div style={{
                       fontFamily: "'JetBrains Mono', monospace",
@@ -226,71 +227,74 @@ export default function CandidatePage() {
                     }}>
                       {item.val}
                     </div>
-                    <div style={{ fontSize: isMobile ? 9.5 : 10.5, color: "var(--text-dim)", letterSpacing: "0.04em" }}>{item.label}</div>
+                    <div style={{ fontSize: isMobile ? 9 : 10.5, color: "var(--text-dim)", letterSpacing: "0.04em" }}>{item.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Risk score panel — on mobile spans full width as separate row */}
-            {!isMobile && <div style={{
-              textAlign: "right",
-              background: `rgba(0,0,0,0.5)`,
-              border: `1px solid ${risk.color}44`,
-              borderTop: `2px solid ${risk.color}`,
-              borderRadius: 2,
-              padding: "18px 22px",
-              minWidth: 170,
-              flexShrink: 0,
-            }}>
+            {/* Risk score panel — desktop only */}
+            {!isMobile && (
               <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 10,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "var(--text-dim)",
-                marginBottom: 10,
+                textAlign: "right",
+                background: `rgba(0,0,0,0.5)`,
+                border: `1px solid ${risk.color}44`,
+                borderTop: `2px solid ${risk.color}`,
+                borderRadius: 2,
+                padding: "18px 22px",
+                minWidth: 170,
+                flexShrink: 0,
               }}>
-                Public Risk Score
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--text-dim)",
+                  marginBottom: 10,
+                }}>
+                  Public Risk Score
+                </div>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "3rem",
+                  fontWeight: 700,
+                  color: risk.textColor,
+                  lineHeight: 1,
+                  textShadow: `0 0 30px ${risk.color}55`,
+                  marginBottom: 10,
+                  letterSpacing: "-0.03em",
+                }}>
+                  {formatScore(c.publicRiskScore)}
+                </div>
+                <div style={{
+                  display: "inline-block",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                  color: risk.textColor,
+                  background: `${risk.color}18`,
+                  border: `1px solid ${risk.color}55`,
+                  padding: "3px 10px",
+                  marginBottom: 12,
+                }}>
+                  {risk.label}
+                </div>
+                <div className="risk-bar" style={{ marginTop: 4 }}>
+                  <div className="risk-bar-fill" style={{ width: `${barPct}%` }} />
+                </div>
               </div>
-              <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "3rem",
-                fontWeight: 700,
-                color: risk.textColor,
-                lineHeight: 1,
-                textShadow: `0 0 30px ${risk.color}55`,
-                marginBottom: 10,
-                letterSpacing: "-0.03em",
-              }}>
-                {formatScore(c.publicRiskScore)}
-              </div>
-              <div style={{
-                display: "inline-block",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                color: risk.textColor,
-                background: `${risk.color}18`,
-                border: `1px solid ${risk.color}55`,
-                padding: "3px 10px",
-                marginBottom: 12,
-              }}>
-                {risk.label}
-              </div>
-              <div className="risk-bar" style={{ marginTop: 4 }}>
-                <div className="risk-bar-fill" style={{ width: `${barPct}%` }} />
-              </div>
-            </div>}
+            )}
+          </div>
 
-          {/* Risk score — mobile inline row */}
+          {/* Risk score — mobile row below grid */}
           {isMobile && (
             <div style={{
               display: "flex",
               alignItems: "center",
-              gap: 12,
-              marginTop: 14,
+              gap: 16,
+              marginTop: 16,
               paddingTop: 14,
               borderTop: `1px solid ${risk.color}33`,
             }}>
@@ -316,8 +320,6 @@ export default function CandidatePage() {
             </div>
           )}
 
-          </div>
-
           {/* Source link */}
           {c.sourceUrl && (
             <div style={{ marginTop: 20, paddingTop: 14, borderTop: "1px solid var(--border-red)" }}>
@@ -341,10 +343,9 @@ export default function CandidatePage() {
           border: "1px solid var(--border)",
           borderTop: "2px solid rgba(212,175,55,0.35)",
           borderRadius: 2,
-          padding: "22px 28px",
+          padding: isMobile ? "16px 16px" : "22px 28px",
           marginBottom: 28,
         }}>
-          {/* Header */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -352,6 +353,7 @@ export default function CandidatePage() {
             marginBottom: 20,
             paddingBottom: 14,
             borderBottom: "1px solid var(--border-subtle)",
+            flexWrap: "wrap",
           }}>
             <span style={{
               fontSize: 10,
@@ -377,67 +379,36 @@ export default function CandidatePage() {
             </span>
           </div>
 
-          {/* Values */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 24, marginBottom: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 20, marginBottom: 18 }}>
             {c.totalAssets != null && (
               <div>
-                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>
-                  TOTAL ASSETS
-                </div>
-                <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "1.8rem",
-                  fontWeight: 700,
-                  color: "#c8a030",
-                  lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                  marginBottom: 4,
-                }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>TOTAL ASSETS</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? "1.4rem" : "1.8rem", fontWeight: 700, color: "#c8a030", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 4 }}>
                   {formatWealth(c.totalAssets)}
                 </div>
-                <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
                   ₹{c.totalAssets.toLocaleString("en-IN")}
                 </div>
               </div>
             )}
             {c.totalLiabilities != null && c.totalLiabilities > 0 && (
               <div>
-                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>
-                  TOTAL LIABILITIES
-                </div>
-                <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "1.8rem",
-                  fontWeight: 700,
-                  color: "#c06060",
-                  lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                  marginBottom: 4,
-                }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>TOTAL LIABILITIES</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? "1.4rem" : "1.8rem", fontWeight: 700, color: "#c06060", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 4 }}>
                   {formatWealth(c.totalLiabilities)}
                 </div>
-                <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
                   ₹{c.totalLiabilities.toLocaleString("en-IN")}
                 </div>
               </div>
             )}
             {c.totalAssets != null && (
               <div>
-                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>
-                  NET WORTH
-                </div>
-                <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "1.8rem",
-                  fontWeight: 700,
-                  color: "#4ade80",
-                  lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                  marginBottom: 4,
-                }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>NET WORTH</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? "1.4rem" : "1.8rem", fontWeight: 700, color: "#4ade80", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 4 }}>
                   {formatWealth(c.totalAssets - (c.totalLiabilities ?? 0))}
                 </div>
-                <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
                   Assets − Liabilities
                 </div>
               </div>
@@ -468,16 +439,10 @@ export default function CandidatePage() {
           border: "1px solid #16a34a44",
           borderLeft: "3px solid #16a34a",
           borderRadius: 2,
-          padding: "32px 40px",
+          padding: "32px 24px",
           textAlign: "center",
         }}>
-          <div style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "1.4rem",
-            fontWeight: 700,
-            color: "#4ade80",
-            marginBottom: 8,
-          }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", fontWeight: 700, color: "#4ade80", marginBottom: 8 }}>
             No Criminal Cases Declared
           </div>
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
@@ -495,34 +460,17 @@ export default function CandidatePage() {
             borderBottom: "1px solid transparent",
             borderImage: "linear-gradient(90deg, var(--crimson) 0%, var(--border-red-bright) 40%, transparent 100%) 1",
           }}>
-            <span style={{
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: 700,
-              fontSize: "1.3rem",
-              letterSpacing: "-0.01em",
-            }}>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: "1.3rem", letterSpacing: "-0.01em" }}>
               Declared Criminal Cases
             </span>
-            <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 10,
-              color: "var(--text-dim)",
-              letterSpacing: "0.08em",
-            }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "var(--text-dim)", letterSpacing: "0.08em" }}>
               {cases.length} TOTAL
             </span>
           </div>
 
           {/* Category breakdown */}
-          <div style={{ marginBottom: 32 }}>
-            <div style={{
-              fontSize: 11,
-              fontFamily: "'JetBrains Mono', monospace",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--text-dim)",
-              marginBottom: 16,
-            }}>
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: 12 }}>
               By Category
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -531,22 +479,15 @@ export default function CandidatePage() {
                   background: `${getCategoryColor(cat)}12`,
                   border: `1px solid ${getCategoryColor(cat)}44`,
                   borderRadius: 2,
-                  padding: "8px 16px",
+                  padding: "8px 14px",
                   display: "flex",
                   gap: 8,
                   alignItems: "center",
                 }}>
-                  <span style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: "1.2rem",
-                    fontWeight: 700,
-                    color: getCategoryColor(cat),
-                  }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "1.1rem", fontWeight: 700, color: getCategoryColor(cat) }}>
                     {caseList.length}
                   </span>
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                    {getCategoryLabel(cat)}
-                  </span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{getCategoryLabel(cat)}</span>
                 </div>
               ))}
             </div>
@@ -576,7 +517,7 @@ export default function CandidatePage() {
                   border: `1px solid ${getCategoryColor(cs.category)}44`,
                   padding: "4px 10px",
                   borderRadius: 2,
-                  minWidth: 70,
+                  minWidth: 60,
                   textAlign: "center",
                   lineHeight: 1.4,
                 }}>
@@ -586,7 +527,7 @@ export default function CandidatePage() {
 
                 {/* Description */}
                 <div>
-                  <div style={{ fontSize: 14, color: "var(--text-primary)", marginBottom: 6, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: isMobile ? 13 : 14, color: "var(--text-primary)", marginBottom: 6, lineHeight: 1.5 }}>
                     {cs.description}
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
@@ -597,26 +538,15 @@ export default function CandidatePage() {
                     <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
                       Weight: <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--text-muted)" }}>×{cs.seriousnessWeight}</span>
                     </span>
+                    {/* Status badge inline on mobile */}
                     {isMobile && (
                       <span style={{
                         fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: "0.06em",
-                        color: cs.status === "convicted" ? "var(--crimson-light)"
-                          : cs.status === "acquitted" ? "#4ade80"
-                          : cs.status === "pending" ? "#f59e0b"
-                          : "var(--text-muted)",
-                        background: cs.status === "convicted" ? "rgba(196,30,58,0.1)"
-                          : cs.status === "acquitted" ? "rgba(34,197,94,0.1)"
-                          : cs.status === "pending" ? "rgba(245,158,11,0.1)"
-                          : "rgba(255,255,255,0.05)",
-                        border: cs.status === "convicted" ? "1px solid rgba(196,30,58,0.4)"
-                          : cs.status === "acquitted" ? "1px solid rgba(34,197,94,0.4)"
-                          : cs.status === "pending" ? "1px solid rgba(245,158,11,0.4)"
-                          : "1px solid var(--border)",
-                        padding: "2px 6px",
-                        borderRadius: 2,
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                        color: cs.status === "convicted" ? "var(--crimson-light)" : cs.status === "acquitted" ? "#4ade80" : cs.status === "pending" ? "#f59e0b" : "var(--text-muted)",
+                        background: cs.status === "convicted" ? "rgba(196,30,58,0.1)" : cs.status === "acquitted" ? "rgba(34,197,94,0.1)" : cs.status === "pending" ? "rgba(245,158,11,0.1)" : "rgba(255,255,255,0.05)",
+                        border: cs.status === "convicted" ? "1px solid rgba(196,30,58,0.4)" : cs.status === "acquitted" ? "1px solid rgba(34,197,94,0.4)" : cs.status === "pending" ? "1px solid rgba(245,158,11,0.4)" : "1px solid var(--border)",
+                        padding: "2px 6px", borderRadius: 2,
                       }}>
                         {getStatusLabel(cs.status).toUpperCase()}
                       </span>
@@ -624,36 +554,24 @@ export default function CandidatePage() {
                   </div>
                 </div>
 
-                {/* Status */}
-                {!isMobile && <div style={{ textAlign: "right" }}>
-                  <span style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    color: cs.status === "convicted" ? "var(--crimson-light)"
-                      : cs.status === "acquitted" ? "#4ade80"
-                      : cs.status === "pending" ? "#f59e0b"
-                      : "var(--text-muted)",
-                    background: cs.status === "convicted" ? "rgba(196,30,58,0.1)"
-                      : cs.status === "acquitted" ? "rgba(34,197,94,0.1)"
-                      : cs.status === "pending" ? "rgba(245,158,11,0.1)"
-                      : "rgba(255,255,255,0.05)",
-                    border: cs.status === "convicted" ? "1px solid rgba(196,30,58,0.4)"
-                      : cs.status === "acquitted" ? "1px solid rgba(34,197,94,0.4)"
-                      : cs.status === "pending" ? "1px solid rgba(245,158,11,0.4)"
-                      : "1px solid var(--border)",
-                    padding: "3px 8px",
-                    borderRadius: 2,
-                    display: "block",
-                    marginBottom: 4,
-                  }}>
-                    {getStatusLabel(cs.status).toUpperCase()}
-                  </span>
-                  <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
-                    {cs.statusMultiplier === 0 ? "×0 (scored)" : `×${cs.statusMultiplier}`}
-                  </span>
-                </div>}
+                {/* Status — desktop only */}
+                {!isMobile && (
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                      color: cs.status === "convicted" ? "var(--crimson-light)" : cs.status === "acquitted" ? "#4ade80" : cs.status === "pending" ? "#f59e0b" : "var(--text-muted)",
+                      background: cs.status === "convicted" ? "rgba(196,30,58,0.1)" : cs.status === "acquitted" ? "rgba(34,197,94,0.1)" : cs.status === "pending" ? "rgba(245,158,11,0.1)" : "rgba(255,255,255,0.05)",
+                      border: cs.status === "convicted" ? "1px solid rgba(196,30,58,0.4)" : cs.status === "acquitted" ? "1px solid rgba(34,197,94,0.4)" : cs.status === "pending" ? "1px solid rgba(245,158,11,0.4)" : "1px solid var(--border)",
+                      padding: "3px 8px", borderRadius: 2, display: "block", marginBottom: 4,
+                    }}>
+                      {getStatusLabel(cs.status).toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
+                      {cs.statusMultiplier === 0 ? "×0 (scored)" : `×${cs.statusMultiplier}`}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>

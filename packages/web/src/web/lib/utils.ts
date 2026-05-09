@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 export function getRiskLevel(score: number): { label: string; color: string; textColor: string } {
   if (score === 0) return { label: "CLEAN", color: "#16a34a", textColor: "#4ade80" };
   if (score < 5) return { label: "LOW", color: "#ca8a04", textColor: "#fbbf24" };
@@ -59,8 +61,8 @@ export const STATES = [
 ];
 
 export const PARTIES = [
-  "BJP", "INC", "SP", "BSP", "DMK", "AIADMK", "TMC", "CPI(M)", "AAP",
-  "TDP", "YSRCP", "SS", "NCP", "RJD", "JD(U)"
+  "BJP", "INC", "SP", "AAP", "DMK", "AITC", "CPI(M)", "CPI",
+  "TDP", "YSRCP", "SHS", "NCP", "RJD", "JD(U)", "JMM", "SAD"
 ];
 
 export const YEARS = [2024, 2023, 2022, 2021, 2020, 2019];
@@ -78,7 +80,6 @@ export function formatWealth(rupees: number | null | undefined): string {
 }
 
 // Mobile detection hook
-import { useState, useEffect } from "react";
 export function useIsMobile(breakpoint = 640): boolean {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth <= breakpoint : false
