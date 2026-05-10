@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getRiskLevel, getCategoryLabel, getCategoryColor, getInitials, formatScore } from "../lib/utils";
+import { getRiskLevel, getCategoryLabel, getCategoryColor, getInitials, formatScore, formatWealth } from "../lib/utils";
 
 export default function ComparePage() {
   const [searchA, setSearchA] = useState("");
@@ -259,6 +259,49 @@ export default function ComparePage() {
           ))}
         </div>
 
+        {/* Wealth */}
+        {(c.totalAssets != null || c.totalLiabilities != null) && (() => {
+          const net = (c.totalAssets ?? 0) - (c.totalLiabilities ?? 0);
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{
+                fontSize: 10,
+                fontFamily: "'JetBrains Mono', monospace",
+                letterSpacing: "0.1em",
+                color: "var(--text-dim)",
+                marginBottom: 8,
+              }}>
+                ECI AFFIDAVIT · SELF-DECLARED
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                {[
+                  { label: "Assets", val: formatWealth(c.totalAssets), color: "#4ade80" },
+                  { label: "Liabilities", val: formatWealth(c.totalLiabilities), color: "var(--crimson-light)" },
+                  { label: "Net Worth", val: formatWealth(net), color: net >= 0 ? "#facc15" : "var(--crimson-light)" },
+                ].map(item => (
+                  <div key={item.label} style={{
+                    textAlign: "center",
+                    background: "rgba(0,0,0,0.2)",
+                    padding: "10px 4px",
+                    borderRadius: 2,
+                  }}>
+                    <div style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                      color: item.color,
+                      marginBottom: 2,
+                    }}>
+                      {item.val}
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--text-dim)" }}>{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Category breakdown */}
         {Object.keys(categoryGroups).length > 0 && (
           <div>
@@ -304,8 +347,15 @@ export default function ComparePage() {
     );
   };
 
-  const winner = (selectedA !== null && selectedB !== null && candidateAQuery.data && candidateBQuery.data)
-    ? (candidateAQuery.data.candidate.publicRiskScore <= candidateBQuery.data.candidate.publicRiskScore ? "A" : "B")
+  const candA = candidateAQuery.data?.candidate;
+  const candB = candidateBQuery.data?.candidate;
+  const winner = (selectedA !== null && selectedB !== null && candA && candB)
+    ? (candA.publicRiskScore <= candB.publicRiskScore ? "A" : "B")
+    : null;
+  const netA = candA ? (candA.totalAssets ?? 0) - (candA.totalLiabilities ?? 0) : null;
+  const netB = candB ? (candB.totalAssets ?? 0) - (candB.totalLiabilities ?? 0) : null;
+  const wealthierName = (netA !== null && netB !== null)
+    ? (netA >= netB ? candA?.displayName : candB?.displayName)
     : null;
 
   return (
@@ -343,19 +393,29 @@ export default function ComparePage() {
           borderRadius: 2,
           padding: "16px 24px",
           marginBottom: 24,
-          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          alignItems: "center",
         }}>
           <span style={{
             fontFamily: "'Playfair Display', serif",
             fontStyle: "italic",
-            fontSize: "1.1rem",
+            fontSize: "1rem",
             color: "#4ade80",
           }}>
-            {winner === "A"
-              ? `${candidateAQuery.data?.candidate.displayName} has a lower Risk Score`
-              : `${candidateBQuery.data?.candidate.displayName} has a lower Risk Score`}
-            {" "}— fewer declared charges.
+            {winner === "A" ? candA?.displayName : candB?.displayName} has a lower Risk Score — fewer declared charges.
           </span>
+          {wealthierName && (
+            <span style={{
+              fontFamily: "'Playfair Display', serif",
+              fontStyle: "italic",
+              fontSize: "1rem",
+              color: "#facc15",
+            }}>
+              {wealthierName} has the higher declared net worth.
+            </span>
+          )}
         </div>
       )}
 
