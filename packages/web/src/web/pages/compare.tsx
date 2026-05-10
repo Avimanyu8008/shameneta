@@ -26,10 +26,21 @@ function CandidateCompareCard({ data, onClear }: { data: { candidate: any; cases
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {c.photoUrl ? (
+            <img
+              src={c.photoUrl}
+              alt={c.displayName}
+              style={{ width: 48, height: 48, borderRadius: 2, objectFit: "cover", flexShrink: 0, border: `2px solid ${c.partyColor}66` }}
+              onError={e => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+                (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+              }}
+            />
+          ) : null}
           <div style={{
             width: 48, height: 48, borderRadius: 2,
             background: `${c.partyColor}22`, border: `2px solid ${c.partyColor}66`,
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: c.photoUrl ? "none" : "flex", alignItems: "center", justifyContent: "center",
             fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: "1.1rem",
             color: c.partyColor, flexShrink: 0,
           }}>
@@ -194,16 +205,27 @@ function CandidatePanel({
                   style={{
                     width: "100%", textAlign: "left", background: "none",
                     border: "none", borderBottom: "1px solid var(--border)",
-                    padding: "12px 16px", cursor: "pointer", color: "var(--text-primary)",
+                    padding: "10px 16px", cursor: "pointer", color: "var(--text-primary)",
                     display: "flex", alignItems: "center", gap: 12, transition: "background 0.15s",
                   }}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-elevated)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "none")}
                 >
+                  {c.photoUrl ? (
+                    <img
+                      src={c.photoUrl}
+                      alt={c.displayName}
+                      style={{ width: 36, height: 36, borderRadius: 2, objectFit: "cover", flexShrink: 0, border: `1px solid ${c.partyColor}44` }}
+                      onError={e => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                        (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+                      }}
+                    />
+                  ) : null}
                   <div style={{
                     width: 36, height: 36, flexShrink: 0,
                     background: `${c.partyColor}22`, border: `1px solid ${c.partyColor}44`,
-                    borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center",
+                    borderRadius: 2, display: c.photoUrl ? "none" : "flex", alignItems: "center", justifyContent: "center",
                     fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: "0.85rem", color: c.partyColor,
                   }}>
                     {getInitials(c.displayName)}
@@ -211,7 +233,7 @@ function CandidatePanel({
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{c.displayName}</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                      {c.partyShort} · {c.state}
+                      {c.partyShort} · {c.constituency} · {c.state}
                     </div>
                   </div>
                 </button>
