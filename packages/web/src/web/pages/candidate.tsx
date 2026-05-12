@@ -106,6 +106,22 @@ export default function CandidatePage() {
   const net = (c.totalAssets ?? 0) - (c.totalLiabilities ?? 0);
   const hasWealth = c.totalAssets != null || c.totalLiabilities != null;
 
+  // Attendance
+  const hasAttendance = c.attendanceDays != null && c.totalSessionDays != null;
+  const attendancePct = hasAttendance
+    ? Math.round((c.attendanceDays / c.totalSessionDays) * 100)
+    : null;
+  const attendanceColor =
+    attendancePct == null ? "var(--text-dim)"
+    : attendancePct >= 75 ? "#4ade80"
+    : attendancePct >= 50 ? "#f59e0b"
+    : "#ef4444";
+  const attendanceLabel =
+    attendancePct == null ? "N/A"
+    : attendancePct >= 75 ? "Regular"
+    : attendancePct >= 50 ? "Irregular"
+    : "Absent";
+
   const statusConfig: Record<string, { color: string; bg: string; border: string; label: string }> = {
     pending:   { color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.4)",  label: "Pending" },
     convicted: { color: "var(--crimson-light)", bg: "rgba(196,30,58,0.1)", border: "rgba(196,30,58,0.4)", label: "Convicted" },
@@ -292,8 +308,81 @@ export default function CandidatePage() {
         </div>
       </div>
 
-      {/* ── STATS GRID: Wealth + Cases Overview ────────────────────────────── */}
+      {/* ── STATS GRID: Attendance + Wealth + Cases Overview ───────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 24 }}>
+
+        {/* ── ATTENDANCE CARD ─────────────────────────────────────────────── */}
+        {hasAttendance && (
+          <div style={{
+            background: "var(--bg-secondary)", border: "1px solid var(--border)",
+            borderTop: `2px solid ${attendanceColor}55`, borderRadius: 2,
+            padding: isMobile ? "16px" : "22px 24px",
+            gridColumn: isMobile ? "1" : "1 / -1",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: "1rem" }}>Parliament Attendance</span>
+              <span style={{ fontSize: 9.5, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text-dim)", padding: "2px 8px", borderRadius: 2, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em" }}>
+                {c.attendanceSession ?? "LS18-S7"}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 20, flexWrap: "wrap" }}>
+              {/* Big % */}
+              <div>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? "2.6rem" : "3rem",
+                  fontWeight: 700, color: attendanceColor, lineHeight: 1,
+                }}>
+                  {attendancePct}%
+                </div>
+                <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 4, letterSpacing: "0.08em", fontFamily: "'JetBrains Mono', monospace" }}>
+                  {c.attendanceDays} of {c.totalSessionDays} sitting days
+                </div>
+              </div>
+
+              {/* Vertical divider */}
+              <div style={{ width: 1, height: 48, background: "var(--border)", alignSelf: "center" }} />
+
+              {/* Status label */}
+              <div>
+                <div style={{
+                  fontSize: 11, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.1em",
+                  color: attendanceColor, background: `${attendanceColor}15`,
+                  border: `1px solid ${attendanceColor}44`, padding: "4px 12px", borderRadius: 2,
+                  fontWeight: 700, display: "inline-block", marginBottom: 6,
+                }}>
+                  {attendanceLabel.toUpperCase()}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                  Signed attendance register
+                </div>
+              </div>
+
+              {/* Progress bar — spans remaining space */}
+              <div style={{ flex: 1, minWidth: 100, alignSelf: "center" }}>
+                <div style={{ height: 8, background: "rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
+                  <div style={{
+                    height: "100%", borderRadius: 4,
+                    background: `linear-gradient(90deg, ${attendanceColor}88, ${attendanceColor})`,
+                    width: `${attendancePct}%`,
+                    transition: "width 0.7s ease",
+                  }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5, color: "var(--text-dim)", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <span>0%</span>
+                  <span style={{ color: "#f59e0b" }}>50%</span>
+                  <span style={{ color: "#4ade80" }}>100%</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, fontSize: 10.5, color: "var(--text-dim)", lineHeight: 1.6 }}>
+              Note: Ministers & senior functionaries often do not sign the register even when present.
+              0% attendance may reflect official duties, not absence.
+              Data: <a href="https://sansad.in/ls/members/attendance" target="_blank" rel="noopener noreferrer" style={{ color: "var(--crimson-light)", textDecoration: "none" }}>Sansad.in ↗</a>
+            </div>
+          </div>
+        )}
 
         {/* Wealth card */}
         {hasWealth && (
@@ -562,8 +651,8 @@ export default function CandidatePage() {
         fontFamily: "'JetBrains Mono', monospace",
       }}>
         <div style={{ marginBottom: 4, letterSpacing: "0.08em" }}>DATA SOURCES</div>
-        <div>Election Commission of India (ECI) · Association for Democratic Reforms (ADR) · MyNeta.info</div>
-        <div style={{ marginTop: 4 }}>All data sourced from publicly filed affidavits. No editorial additions.</div>
+        <div>Election Commission of India (ECI) · Association for Democratic Reforms (ADR) · MyNeta.info · Sansad.in (Parliament of India)</div>
+        <div style={{ marginTop: 4 }}>Criminal case data from ECI affidavits. Attendance data from Lok Sabha official records (Session VII, LS 18).</div>
       </div>
     </div>
   );

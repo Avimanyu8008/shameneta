@@ -1,22 +1,25 @@
-# ShameNeta Task Tracker
+# Task: Add Attendance % to Politician Profile
 
-## Status: SCRAPING IN PROGRESS
-- Scraper running background, ~5-6 min total
-- Real Lok Sabha 2024 winners (543 MPs) being scraped from myneta.info
-- 300ms delay per constituency → ~5 min
+## Plan
+1. [x] Find sansad.in attendance API
+2. [ ] Add columns to schema: attendanceDays, totalSessionDays, attendanceSession
+3. [ ] Push schema change to DB
+4. [ ] Write scraper to fetch & match all MPs
+5. [ ] Update candidate.tsx to show attendance card
+6. [ ] Push to GitHub
 
-## Completed
-- [x] App created, schema pushed, Hono API running on :5173
-- [x] Wrote /api/scraper.ts — parses constituency list pages + candidate detail pages
-- [x] Updated seed.ts — empty-check guard, uses scraper
-- [x] Added /api/admin/scrape POST endpoint (force=true to re-scrape)
-- [x] Added /api/admin/status GET endpoint
+## API Found
+- https://sansad.in/api_ls/member/getMemberAttendanceMemberWise?loksabha=18&session=7&locale=en
+- Returns: mpsno, memberName, constituency, state, signedDaysCount
+- Session 7 has 31 total days
+- 542 entries, 480 non-zero
 
-## In Progress
-- [ ] Scraping: constituency 15+/543 in progress (check logs)
+## DB Changes
+- Add: attendanceDays INTEGER DEFAULT NULL (signed register days)
+- Add: totalSessionDays INTEGER DEFAULT NULL (total days in session) 
+- Add: attendanceSession TEXT DEFAULT NULL (e.g. "LS18-S7")
 
-## Remaining after scrape
-- [ ] Verify 543 politicians in DB
-- [ ] Check leaderboard shows real data
-- [ ] Check party stats computed correctly
-- [ ] Potentially improve IPC section regex (section 186A, etc.)
+## Name Matching Strategy
+- Normalize both names: lowercase, remove punctuation, compress spaces
+- Match on normalized name + constituency state overlap
+- Store unmatched for review

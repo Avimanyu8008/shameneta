@@ -20,6 +20,9 @@ export const politicians = sqliteTable("politicians", {
   publicRiskScore: real("public_risk_score").notNull().default(0),
   totalAssets: integer("total_assets"), // in rupees, from ECI affidavit
   totalLiabilities: integer("total_liabilities"), // in rupees, from ECI affidavit
+  attendanceDays: integer("attendance_days"), // days signed register (from sansad.in)
+  totalSessionDays: integer("total_session_days"), // total sitting days in session
+  attendanceSession: text("attendance_session"), // e.g. "LS18-S7"
   sourceUrl: text("source_url"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
