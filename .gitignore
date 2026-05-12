@@ -8,3 +8,4 @@ dist/
 .env.local
 .env.github
 packages/web/dist/
+.env.git
